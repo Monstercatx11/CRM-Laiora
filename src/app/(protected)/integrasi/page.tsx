@@ -1,2 +1,9 @@
-import { DivisionPage } from '@/components/division-page';
-export default function Page() { return <DivisionPage path="/integrasi" />; }
+import Link from 'next/link';
+import { requireAccount } from '@/lib/auth';
+import { getSyncStatus,getSettings } from '@/lib/data';
+import { whatsappUrl } from '@/lib/format';
+import { WhatsAppConnection } from '@/components/whatsapp-connection';
+import { SyncNow } from '@/components/sync-now';
+import { SyncStatus } from '@/components/sync-status';
+import { RetrySyncForm } from '@/components/settings-forms';
+export default async function IntegrationsPage(){await requireAccount('/integrasi');const [sync,settings]=await Promise.all([getSyncStatus(),getSettings()]);const link=whatsappUrl(settings.data.whatsapp_phone);return <main className="page-content"><div className="page-head"><div><span className="eyebrow">Laiora / Integrasi</span><h1>Koneksi ruang kerja</h1><p>WhatsApp Linked Devices, database utama, dan salinan operasional Google Sheets.</p></div></div><div className="grid-two"><section className="panel"><h2>WhatsApp Business</h2><WhatsAppConnection/>{link?<p><a className="link-button" href={link} target="_blank" rel="noopener noreferrer">Buka link WhatsApp bisnis ↗</a></p>:<p className="muted">Atur nomor WhatsApp bisnis pada <Link href="/pengaturan">Pengaturan</Link> untuk membuat link wa.me.</p>}</section><section className="panel"><h2>Google Sheets</h2><SyncStatus stats={{...sync.data,error:sync.error||sync.data.error||undefined}}/><SyncNow/><RetrySyncForm/><p className="muted">Tombol sinkronisasi menjalankan batch terbatas dari Vercel setelah identitas Google dan secret backend dikonfigurasi. Tab Laiora_ dikelola aplikasi. Data tetap tersimpan di database ketika Sheets belum tersedia.</p><a className="link-button" href="https://docs.google.com/spreadsheets/d/1KTxNabq2oEw-kevJEBj2J4BZ7ZTd21fisIALeGkXMs0/edit" target="_blank" rel="noopener noreferrer">Buka spreadsheet tujuan ↗</a></section></div><section className="panel"><h2>Database dan akun</h2><p>Terhubung melalui sesi Supabase akun Laiora. Semua divisi memakai satu akun dengan aturan akses database.</p>{settings.error&&<p className="message error">{settings.error}</p>}<p><Link href="/pengaturan">Atur profil bisnis, penomoran, dan logo →</Link></p></section></main>;}

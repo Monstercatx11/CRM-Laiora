@@ -5,3 +5,6 @@ node_modules/
 *.tsbuildinfo
 playwright-report/
 test-results/
+
+# Generated same-origin PDF.js worker (copied from pinned npm dependency).
+/public/pdf.worker.min.mjs

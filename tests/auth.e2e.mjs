@@ -9,7 +9,7 @@ import { chromium } from 'playwright';
 // This suite talks only to its own fake Auth/Data API and production Next server.
 // Private runtime settings isolate tests even when the build embeds public project settings.
 const repository = fileURLToPath(new URL('..', import.meta.url));
-const protectedPaths = ['/dashboard', '/pesanan', '/tracking-chat', '/produksi', '/pengiriman', '/pembayaran', '/integrasi'];
+const protectedPaths = ['/dashboard', '/pesanan', '/tracking-chat', '/produksi', '/pengiriman', '/pembayaran', '/katalog', '/pengaturan', '/integrasi'];
 const allowedUser = { id: '11111111-1111-4111-8111-111111111111', email: 'allowed@example.test' };
 const unboundUser = { id: '22222222-2222-4222-8222-222222222222', email: 'unbound@example.test' };
 const password = 'example-password';
@@ -109,6 +109,25 @@ const fakeSupabase = createServer(async (request, response) => {
     if (rpcUnavailable) { respond(response, 503, { code: 'TEST_UNAVAILABLE', message: 'Synthetic database outage' }); return; }
     if (!valid) { respond(response, 401, { code: 'PGRST301', message: 'Invalid JWT' }); return; }
     respond(response, 200, authenticated.user.id === allowedUser.id);
+    return;
+  }
+  // Explicit empty operational fixtures keep this suite focused on Auth while
+  // retaining an allowlist: an unexpected table/RPC still fails the audit.
+  const readTables = ['/rest/v1/orders', '/rest/v1/products', '/rest/v1/conversations'];
+  const readRpcs = ['/rest/v1/rpc/laiora_get_sequence', '/rest/v1/rpc/laiora_sync_status'];
+  if ((request.method === 'GET' && readTables.includes(url.pathname)) ||
+      (request.method === 'POST' && readRpcs.includes(url.pathname)) ||
+      (request.method === 'GET' && url.pathname === '/rest/v1/app_settings')) {
+    if (!valid) { respond(response, 401, { code: 'PGRST301', message: 'Invalid JWT' }); return; }
+    if (authenticated.user.id !== allowedUser.id) { respond(response, 403, { code: '42501', message: 'Access denied' }); return; }
+    if (url.pathname === '/rest/v1/app_settings') {
+      respond(response, 200, { singleton: true, business_name: 'Laiora test', timezone: 'Asia/Jakarta', whatsapp_phone: '', bank_name: '', bank_account: '', bank_holder: '', greeting_card_price: 5000, logo_path: null });
+    } else if (url.pathname === '/rest/v1/rpc/laiora_sync_status') {
+      respond(response, 200, { pending: 0, failed: 0, last_completed: null });
+    } else {
+      response.setHeader('Content-Range', '*/0');
+      respond(response, 200, []);
+    }
     return;
   }
   if (url.pathname === '/auth/v1/.well-known/jwks.json') {
@@ -217,7 +236,8 @@ try {
   const childEnvironment = { ...process.env, NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1',
     SUPABASE_URL: fakeOrigin, SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_local_auth_test',
     NEXT_PUBLIC_SUPABASE_URL: fakeOrigin, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_local_auth_test' };
-  for (const key of ['SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_ACCESS_TOKEN', 'DATABASE_URL']) delete childEnvironment[key];
+  for (const key of Object.keys(childEnvironment)) if (/SUPABASE_(?:SECRET|SERVICE_ROLE|ACCESS_TOKEN)|DATABASE_URL|WHATSAPP_|GOOGLE_(?:SERVICE|SPREADSHEET)|CRON_SECRET/.test(key)) delete childEnvironment[key];
+  Object.assign(childEnvironment, { SUPABASE_SECRET_KEY: '', SUPABASE_SERVICE_ROLE_KEY: '', SUPABASE_ACCESS_TOKEN: '', DATABASE_URL: '', WHATSAPP_BRIDGE_URL: '', WHATSAPP_BRIDGE_TOKEN: '', GOOGLE_SERVICE_ACCOUNT_JSON: '', GOOGLE_SPREADSHEET_ID: '' });
   app = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'start', '--hostname', '127.0.0.1', '--port', String(appPort)],
     { cwd: repository, env: childEnvironment, stdio: ['ignore', 'pipe', 'pipe'] });
   const rememberLog = (chunk) => { appLog = (appLog + chunk.toString()).slice(-16_000); };
@@ -247,6 +267,16 @@ try {
     assert(!JSON.stringify(body).includes(allowedUser.email));
   });
 
+  await check('integration and document APIs reject anonymous access without side effects', async () => {
+    await withPage(appOrigin, async (page, context) => {
+      for (const path of ['/api/whatsapp/status','/api/sync','/api/orders/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/delivery-order','/api/payments/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/proof']) {
+        const response=await context.request.get(path);
+        assert.equal(response.status(),401,path);assert.match(response.headers()['cache-control'],/no-store/);
+      }
+      const upload=await context.request.post('/api/branding/logo');assert.equal(upload.status(),401);
+      const crossOrigin=await context.request.post('/api/sync',{headers:{Origin:'https://untrusted.example'}});assert.equal(crossOrigin.status(),403);
+    });
+  });
   await check('bad credentials return a generic error without setting a valid session', async () => {
     await withPage(appOrigin, async (page, context) => {
       await login(page, allowedUser.email, '/pesanan', 'incorrect-password');

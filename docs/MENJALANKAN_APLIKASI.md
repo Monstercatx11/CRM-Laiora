@@ -2,9 +2,9 @@
 
 ## Status aplikasi
 
-Aplikasi Next.js saat ini menyediakan login email/password Supabase, logout, refresh sesi, pemeriksaan satu akun Laiora, dan tujuh halaman divisi yang terlindungi. Isi halaman divisi masih fondasi; CRUD order, tracking WhatsApp QR, PDF, dan sinkronisasi Sheets belum diimplementasikan.
+Aplikasi Next.js saat ini menyediakan login email/password Supabase, logout, refresh sesi, pemeriksaan satu akun Laiora, dan sembilan halaman divisi/pengaturan yang terlindungi, CRUD order, katalog, pembayaran/bukti, produksi/pengiriman, tracking chat, dokumen, dan konektor opsional. Versi ini memerlukan [upgrade005–006](PANDUAN_OPERASIONAL.md) pada database existing. QR belum aktif tanpa service persisten; Sheets memerlukan identitas Google dan secret backend.
 
-Pemilik melaporkan bahwa SQL setup berhasil, akun Auth sudah dibuat dan diikat, serta pendaftaran publik sudah dimatikan. Verifikasi login terhadap proyek hosted belum selesai karena jaringan mesin sesi pengembangan masih menolak koneksi ke domain proyek.
+Pemilik melaporkan bahwa SQL setup berhasil, akun Auth sudah dibuat dan diikat, serta pendaftaran publik sudah dimatikan. Public Auth dan penutupan signup sudah terverifikasi, tetapi login/CRUD hosted sesudah upgrade belum diuji dengan akun nyata.
 
 ## Pilih tempat menjalankan
 

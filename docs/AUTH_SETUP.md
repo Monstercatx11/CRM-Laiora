@@ -2,7 +2,7 @@
 
 ## Status saat ini
 
-Aplikasi Next.js sudah memiliki login email/password melalui Supabase, logout, refresh cookie server-side, tujuh halaman divisi terlindungi, dan API sesi yang juga memeriksa otorisasi. Style mengikuti konsep krem/biru Laiora. Halaman divisi masih berupa fondasi; CRUD order, chat WhatsApp, dan sinkronisasi Sheets belum dibangun.
+Aplikasi Next.js sudah memiliki login email/password melalui Supabase, logout, refresh cookie server-side, sembilan halaman divisi/pengaturan terlindungi, dan API sesi yang juga memeriksa otorisasi. Style mengikuti konsep krem/biru Laiora. CRUD order, katalog, pembayaran, produksi/pengiriman, tracking chat, pengaturan, dan konektor integrasi kini tersedia. Untuk aktivasi gunakan [panduan operasional](PANDUAN_OPERASIONAL.md).
 
 Pemilik kini melaporkan setup SQL, akun Auth, binding UUID, dan penutupan signup telah selesai melalui dashboard Supabase. Sesi pengembangan belum memverifikasi login hosted karena kendala jaringan; lihat [status integrasi](STATUS_INTEGRASI.md). Keberhasilan tes lokal dibedakan dari verifikasi hosted.
 
@@ -60,6 +60,9 @@ Password recovery, magic link, OAuth callback, dan signup belum diimplementasika
 | `/pengiriman` | Pengiriman, akun terikat |
 | `/pembayaran` | Pembayaran, akun terikat |
 | `/integrasi` | Integrasi, akun terikat |
+| `/katalog` | Produk dan harga, akun terikat |
+| `/pengaturan` | Profil/counter/logo, akun terikat |
+| `/pesanan/baru` dan `/pesanan/[id]` | Input/detail/revisi dengan guard per halaman |
 | `/api/session` | JSON user minimal untuk akun terikat; 401/403/503 bila tidak memenuhi syarat |
 
 Tidak ada role per divisi. Akun bersama dapat membuka seluruh halaman. Identitas orang yang menggunakan akun bersama tidak dapat dibedakan oleh audit.
@@ -103,3 +106,7 @@ Tes ini memverifikasi integrasi aplikasi dengan bentuk respons Auth/RPC yang dit
 ## Alternatif SQL Editor untuk proyek development baru
 
 File [SETUP_LAIORA.sql](../supabase/SETUP_LAIORA.sql) menggabungkan empat migrasi dalam satu transaksi, tanpa akun Auth atau counter live. Bila belum ada schema/bucket Laiora, administrator dapat menjalankan file ini satu kali melalui SQL Editor. Periksa objek existing terlebih dahulu. Jangan menjalankan file gabungan dan empat migrasi sumber dua kali; catat penerapan manual dan rekonsiliasi migration history sebelum memakai CLI. File gabungan telah menjalani 28 pemeriksaan database lokal yang sama dengan migrasi terpisah.
+
+## Verifikasi versi operasional
+
+Versi operasional menambahkan RPC mutation terikat akun, proof/logo privat, API QR dan sinkronisasi server-side. Tes Auth kini mencakup12 skenario (termasuk API integrasi/dokumen) dan15 skenario browser operasional. Public Auth endpoint proyek berhasil dijangkau dan disable_signup=true terverifikasi; login user dan CRUD hosted setelah005–006 tetap menunggu upgrade/pengujian pada akun nyata.

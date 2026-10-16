@@ -1,0 +1,23 @@
+export type DataResult<T> = { data: T; error: string | null };
+export type ActionState = { error: string; success?: string };
+export type Product = { id: string; sku: string; name: string; size: string; active: boolean; unit_price: number | null };
+export type OrderItem = { id: string; order_id: string; product_id: string | null; product_name: string; size: string; quantity: number; unit_price: number; line_total: number; cutting_note: string | null; item_note: string | null };
+export type Payment = { id: string; order_id: string; amount: number; paid_at: string | null; reference: string | null; verification_status: 'pending'|'confirmed'|'rejected'; verified_at: string | null; verified_by: string | null; proof_path: string | null; created_at: string; request_id?: string };
+export type OrderRevision = { id: string; order_id: string; revision_no: number; changed_at: string; actor_id: string | null; before_data: Record<string,unknown> | null; after_data: Record<string,unknown> };
+export type Revision = OrderRevision;
+export type Order = {
+ id: string; order_no: string | null; state: 'draft'|'confirmed'|'cancelled'; revision_no: number;
+ raw_form: string | null; channel: string; sender_name: string | null; sender_phone: string | null; recipient_name: string | null; recipient_phone: string | null;
+ delivery_date: string | null; delivery_time_note: string | null; address: string | null; shipping_method: string | null; operational_notes: string | null; shipping_fee: number | null;
+ greeting_card_choice: 'yes'|'no'|'undecided'; greeting_card_qty: number; card_unit_price: number; card_from: string | null; card_to: string | null; card_message: string | null;
+ product_quantity: number; product_total: number; card_total: number; subtotal: number; grand_total: number | null;
+ completeness: 'incomplete'|'complete'; production_status: string; fulfillment_status: string; created_at: string; updated_at: string;
+ order_items: OrderItem[]; payments: Payment[]; order_revisions: OrderRevision[];
+};
+export type BusinessSettings = { singleton?: boolean; business_name: string; timezone: string; whatsapp_phone: string; bank_name: string; bank_account: string; bank_holder: string; greeting_card_price: number; logo_path: string | null };
+export type Contact = { id: string; display_name: string | null; phone: string | null };
+export type Conversation = { id: string; contact_id: string; account_ref: string; external_chat_id: string; last_message_at: string | null; contacts: Contact | null };
+export type Message = { id: string; conversation_id: string; external_message_id: string; direction: 'inbound'|'outbound'; message_type: string; body: string | null; sent_at: string; received_at: string };
+export type Opportunity = { id: string; conversation_id: string; title: string | null; follow_up: string; created_at: string; opportunity_product_labels: { product_id:string;source:string }[]; opportunity_order_links: {order_id:string;orders:{id:string;order_no:string|null;state:string}|null}[] };
+export type ChatData = { conversations:Conversation[]; messages:Message[]; opportunities:Opportunity[]; allOpportunities:Opportunity[]; selected:Conversation|null };
+export const defaultSettings:BusinessSettings = { business_name:'Laiora Boulangerie',timezone:'Asia/Jakarta',whatsapp_phone:'',bank_name:'BCA',bank_account:'5390823845',bank_holder:'Yohanes',greeting_card_price:5000,logo_path:null };

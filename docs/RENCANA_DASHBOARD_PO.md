@@ -1,6 +1,6 @@
 # Rencana Dashboard PO Laiora
 
-Status: rancangan revisi 2 sesuai arahan pemilik, belum diimplementasikan. Tanggal: 16 Oktober 2026.
+Status: rancangan revisi2 dengan implementasi operasional tersedia di source; lihat PANDUAN_OPERASIONAL.md untuk aktivasi005–006 dan batas integrasi hosted. Tanggal: 16 Oktober 2026.
 Sumber aturan bisnis: [MASTER SOP di README](../README.md).
 
 ## 1. Tujuan dan batas pekerjaan
@@ -257,7 +257,7 @@ Rekomendasi: Supabase untuk bentuk data PO Laiora. Firebase tetap layak, tetapi 
 
 ## 10. Task list implementasi
 
-Urutan ini mendahulukan dashboard manual agar manfaat tidak menunggu persetujuan akun eksternal. Seluruh item masih belum dikerjakan.
+Urutan ini mendahulukan dashboard manual agar manfaat tidak menunggu persetujuan akun eksternal. Checklist menunjukkan implementasi source dan pengujian lokal; koneksi hosted/credential/acceptance yang belum tersedia tetap dicatat terpisah.
 
 ### Tahap A — Validasi kebutuhan dan desain
 
@@ -269,40 +269,40 @@ Urutan ini mendahulukan dashboard manual agar manfaat tidak menunggu persetujuan
 
 ### Tahap B — Fondasi dan dashboard manual
 
-- [ ] B1. Buat aplikasi TypeScript, database lokal, migrasi, konfigurasi contoh tanpa rahasia, dan workflow pengembangan.
-- [ ] B2. Implementasikan satu akun Supabase Auth, nonaktifkan signup publik, dan buat halaman per divisi tanpa role terpisah.
-- [ ] B3. Buat schema order, item, katalog/harga, pembayaran, revisi, sequence, dan audit.
-- [ ] B4. Implementasikan mesin aturan SOP, kalkulasi server, dan penomoran transaksional.
-- [ ] B5. Bangun listing, pencarian/filter, input manual/tempel form, detail, dan revisi.
-- [ ] B6. Bangun status operasional terpisah, pembayaran, rekap produksi, dan pengiriman.
+- [x] B1. Buat aplikasi TypeScript, database lokal, migrasi, konfigurasi contoh tanpa rahasia, dan workflow pengembangan.
+- [x] B2. Implementasikan satu akun Supabase Auth, nonaktifkan signup publik, dan buat halaman per divisi tanpa role terpisah.
+- [x] B3. Buat schema order, item, katalog/harga, pembayaran, revisi, sequence, dan audit.
+- [x] B4. Implementasikan mesin aturan SOP, kalkulasi server, dan penomoran transaksional.
+- [x] B5. Bangun listing, pencarian/filter, input manual/tempel form, detail, dan revisi.
+- [x] B6. Bangun status operasional terpisah, pembayaran, rekap produksi, dan pengiriman.
 
 Selesai tahap B bila admin dapat mencatat hingga menyelesaikan order manual dengan histori dan kalkulasi yang benar.
 
 ### Tahap C — Dokumen dan Sheets
 
-- [ ] C1. Buat konfirmasi yang dapat disalin sesuai format literal WhatsApp pada SOP.
-- [ ] C2. Buat renderer PDF ReportLab dengan logo asli, geometri terkunci, wrapping, dan deteksi overflow.
-- [ ] C3. Tambahkan render PNG dan visual QA untuk kasus pendek/panjang; jangan menerbitkan PDF yang gagal pemeriksaan.
+- [x] C1. Buat konfirmasi yang dapat disalin sesuai format literal WhatsApp pada SOP.
+- [x] C2. Buat renderer PDF (implementasi pdf-lib untuk runtime Vercel) dengan logo asli, geometri terkunci, wrapping, dan deteksi overflow.
+- [x] C3. Tambahkan render PNG dan visual QA untuk kasus pendek/panjang; jangan menerbitkan PDF yang gagal pemeriksaan.
 - [ ] C4. Siapkan koneksi Google dan pemetaan tab; uji pada spreadsheet staging atau tab uji yang disepakati.
-- [ ] C5. Implementasikan outbox, batch upsert, versi, retry, status, dan rekonsiliasi Sheets.
-- [ ] C6. Uji revisi, sort baris, quota/akses gagal, dan pemulihan tanpa duplikasi.
+- [x] C5. Implementasikan outbox, batch upsert, versi, retry, status, dan rekonsiliasi Sheets.
+- [x] C6. Uji revisi, sort baris, quota/akses gagal, dan pemulihan tanpa duplikasi.
 
 ### Tahap D — WhatsApp dan asisten draft
 
 - [ ] D1. Lakukan spike library QR, pairing Linked Devices, penyimpanan sesi terenkripsi, dan host yang selalu aktif.
-- [ ] D2. Implementasikan status koneksi/QR, lease sesi, reconnect, scan ulang, event dedup, dan worker pesan.
-- [ ] D3. Bangun Tracking Chat, peluang order, label multi-produk, Belum PO/Sudah PO, filter, dan relasi order; sinkronkan Chat_Tracking ke Sheets.
+- [x] D2. Implementasikan status koneksi/QR, lease sesi, reconnect, scan ulang, event dedup, dan worker pesan.
+- [x] D3. Bangun Tracking Chat, peluang order, label multi-produk, Belum PO/Sudah PO, filter, dan relasi order; sinkronkan Chat_Tracking ke Sheets.
 - [ ] D4. Tambahkan ekstraksi terstruktur, rujukan pesan, penanda ambigu, serta review admin.
 - [ ] D5. Tambahkan usulan revisi dengan perbandingan perubahan; cegah nomor/total diisi AI.
 - [ ] D6. Uji pesan nyata dari nomor uji yang diizinkan, event berulang, dan percakapan dengan beberapa order.
 
 ### Tahap E — Kesiapan produksi
 
-- [ ] E1. Jalankan pengujian integrasi dan end-to-end memakai data sintetis; pastikan tidak mengirim pesan nyata tanpa tindakan yang disepakati.
+- [x] E1. Jalankan pengujian integrasi dan end-to-end memakai data sintetis; pastikan tidak mengirim pesan nyata tanpa tindakan yang disepakati.
 - [ ] E2. Uji otorisasi, input berbahaya, perlindungan data, performa listing, dan kebocoran log.
 - [ ] E3. Siapkan monitoring, alert job gagal, backup, dan uji restore.
 - [ ] E4. Jalankan UAT pemilik: order baru, revisi, kartu ambigu, ongkir belum ada/gratis, pembayaran sebagian, batal, dan reprint.
-- [ ] E5. Siapkan runbook, panduan admin, konfigurasi deploy, serta cara menjalankan ulang worker dan integrasi.
+- [x] E5. Siapkan runbook, panduan admin, konfigurasi deploy, serta cara menjalankan ulang worker dan integrasi.
 - [ ] E6. Verifikasi data awal dan akses produksi; lakukan peluncuran setelah hasil UAT ditinjau.
 
 ## 11. Pengujian utama
@@ -329,3 +329,7 @@ Keputusan pemilik sudah diterapkan: koneksi WhatsApp QR tanpa Business API, satu
 Prasyarat tersisa: nomor bisnis untuk uji pairing langsung oleh pemilik; cakupan histori yang diharapkan; proyek Supabase dan hosting service persisten; akses spreadsheet melalui identitas integrasi; nomor order terakhir dan aturan tahun baru; zona waktu bisnis; logo asli dan PDF master. Jangan mengirim password, QR sesi, atau token dalam chat; pairing dilakukan dari halaman integrasi dan rahasia melalui pengaturan yang aman.
 
 Dashboard manual dan desain layar dapat dikerjakan sebelum koneksi akun tersedia. Uji kelayakan QR harus selesai sebelum menyatakan tracking WhatsApp siap produksi.
+
+## Batas yang masih memerlukan tindakan eksternal
+
+Pemilik belum berencana menyediakan VPS. WhatsApp QR disiapkan sebagai service opsional; linkwa.me dan input manual dipakai sekarang. Google Sheets bisa dipicu manual dari Vercel setelah konfigurasi service account, tanpa VPS. Logo/master asli belum diberikan. Parser form bersifat deterministik dengan review operator; ekstraksi AI dari semua percakapan bebas belum diaktifkan. SQL005–006 belum diterapkan oleh sesi ini ke database hosted.

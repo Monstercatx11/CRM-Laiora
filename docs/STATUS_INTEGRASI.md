@@ -20,3 +20,11 @@ Jangan meminta key/password baru hanya karena kegagalan jaringan. Jangan menjala
 Production build, TypeScript, missing-configuration check, serta 11 skenario browser auth terhadap service tiruan telah lulus pada verifikasi sebelumnya. Konfigurasi runtime server kini memisahkan test lokal dari nilai proyek yang mungkin telah tertanam saat build. Hasil hosted tetap dicatat terpisah.
 
 Tujuh halaman sudah dilindungi tetapi masih menampilkan fondasi. Fitur order nyata, WhatsApp, Sheets, dan PDF masih menunggu implementasi. Deployment publik belum dilakukan.
+
+## Versi operasional berikutnya
+
+Kode CRUD PO, pengaturan, katalog, pembayaran/bukti privat, produksi/pengiriman, tracking chat dan dokumen sudah ditambahkan. Penerapan005–006 pada proyek hosted belum dilakukan oleh sesi ini; gunakan UPGRADE_OPERASIONAL.sql setelah membaca panduan operasional. Pemilik belum berencana menggunakan VPS: WhatsApp QR tetap opsional/tidak aktif, linkwa.me dan input manual tersedia. Sheets dapat dipicu manual dari Vercel setelah serviceaccount dan secretbackend dikonfigurasi; belum ada Googlecredential atau pairing nyata di sesi.
+
+## Verifikasi koneksi terbaru
+
+Kebijakan jaringan kini enforced untuk domain proyek. Public GET auth/v1/health dan auth/v1/settings berhasilHTTP200; disable_signup=true terkonfirmasi. Kredensial pengguna tidak diminta untuk tes tersebut. Status403 pada bagian sebelumnya adalah riwayat kondisi lama, bukan kondisi terbaru koneksi Supabase.

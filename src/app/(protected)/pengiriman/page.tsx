@@ -1,2 +1,25 @@
-import { DivisionPage } from '@/components/division-page';
-export default function Page() { return <DivisionPage path="/pengiriman" />; }
+import Link from 'next/link';
+import { requireAccount } from '@/lib/auth';
+import { getOperationalOrders } from '@/lib/data';
+import { dateLabel, fulfillmentLabel, fulfillmentOptions, productionLabel, whatsappUrl } from '@/lib/format';
+import { StatusControls } from '@/components/status-controls';
+import { DocumentDownload } from '@/components/document-download';
+import { DataError, EmptyOrders, matchesOrder, OperationalFilters, OrderIdentity, OrderItems, queryDate, queryText, type OperationalSearch } from '@/components/operational-tables';
+
+const statuses = [{ value: 'active', label: 'Belum selesai diserahkan' }, { value: 'all', label: 'Semua pemenuhan' }, ...fulfillmentOptions.map(([value, label]) => ({ value, label }))];
+export default async function DeliveryPage({ searchParams }: { searchParams: OperationalSearch }) {
+  await requireAccount('/pengiriman');
+  const params = await searchParams;
+  const date = queryDate(params.date), query = queryText(params.q);
+  const requestedStatus = queryText(params.status);
+  const status = statuses.some(item => item.value === requestedStatus) ? requestedStatus : 'active';
+  const result = await getOperationalOrders({ date: date || undefined, state: 'confirmed' });
+  const orders = result.data.filter(order => matchesOrder(order, query) && (status === 'all' || (status === 'active' ? !['picked_up', 'completed'].includes(order.fulfillment_status) : order.fulfillment_status === status))).sort((a, b) => (a.delivery_date ?? '9999').localeCompare(b.delivery_date ?? '9999') || (a.order_no ?? '').localeCompare(b.order_no ?? ''));
+  return <main className="page-content"><div className="page-head"><div><span className="eyebrow">Laiora / Pengiriman</span><h1>Pengiriman &amp; serah terima</h1><p className="subtitle">Cocokkan penerima, jumlah barang, dan instruksi sebelum barang diserahkan.</p></div><Link className="secondary" href="/produksi">Lihat produksi</Link></div><OperationalFilters path="/pengiriman" date={date} query={query} status={status} statuses={statuses} /><DataError error={result.error} />{!result.error && <>{orders.length ? <>
+    <div className="stats"><section className="stat"><span className="eyebrow">Order sesuai filter</span><strong>{orders.length}</strong></section><section className="stat"><span className="eyebrow">Siap diserahkan</span><strong>{orders.filter(order => order.production_status === 'ready_to_handover' && order.fulfillment_status === 'waiting').length}</strong></section><section className="stat"><span className="eyebrow">Dalam pengiriman</span><strong>{orders.filter(order => order.fulfillment_status === 'in_transit').length}</strong></section></div>
+    <section className="panel"><div className="page-head"><div><span className="eyebrow">Manifest operasional</span><h2>Daftar pengiriman</h2></div><span className="badge">{orders.length} order</span></div><div className="table-wrap"><table className="table"><thead><tr><th>Order &amp; jadwal</th><th>Penerima &amp; alamat</th><th>Produk &amp; instruksi</th><th>Progres &amp; dokumen</th></tr></thead><tbody>{orders.map(order => {
+      const phoneLink = whatsappUrl(order.recipient_phone);
+      return <tr key={order.id}><td><OrderIdentity order={order} /><span className="cell-note">{dateLabel(order.delivery_date)}</span><span className="cell-note">{order.delivery_time_note}</span><span className="badge">{order.shipping_method || 'Metode kirim belum diisi'}</span></td><td><strong>{order.recipient_name || 'Penerima belum diisi'}</strong><span className="cell-note">{phoneLink ? <a href={phoneLink} target="_blank" rel="noopener noreferrer">{order.recipient_phone}</a> : order.recipient_phone || 'HP penerima belum diisi'}</span><p className="pre-wrap">{order.address || (order.shipping_method === 'Pick Up' ? 'Pick Up — konfirmasi lokasi pengambilan.' : 'Alamat belum diisi. Lengkapi sebelum pengiriman.')}</p></td><td><OrderItems order={order} /><span className="cell-note">Total {order.product_quantity} unit produk</span>{order.greeting_card_choice === 'yes' && <span className="badge">Sertakan {order.greeting_card_qty} kartu ucapan</span>}{order.greeting_card_choice === 'undecided' && <span className="badge warning">Pilihan kartu perlu diperiksa</span>}{order.operational_notes && <p className="pre-wrap">{order.operational_notes}</p>}</td><td><span className="badge">{fulfillmentLabel(order.fulfillment_status)}</span><span className="cell-note">Produksi: {productionLabel(order.production_status)}</span><StatusControls order={order} scope="fulfillment" /><div className="actions"><Link className="link-button" href={`/pesanan/${order.id}`}>Detail order</Link><DocumentDownload orderId={order.id} orderNo={order.order_no} /></div></td></tr>;
+    })}</tbody></table></div><p className="footnote">Ubah progres setelah pengiriman atau pengambilan benar-benar terjadi. Unduhan dokumen tidak mengubah status.</p></section>
+  </> : <EmptyOrders>Ubah tanggal atau status untuk melihat pengiriman lainnya. Hanya PO terkonfirmasi yang masuk daftar ini.</EmptyOrders>}</>}</main>;
+}

@@ -1,7 +1,8 @@
 # CRM Laiora — Dashboard PO
 
-Aplikasi Next.js dengan Supabase Auth, login satu akun, dan tujuh halaman divisi terlindungi. Fitur order, WhatsApp QR, Google Sheets, dan PDF masih dalam pengembangan; desain dan aturan bisnis tersedia di bawah.
+Aplikasi Next.js dengan Supabase Auth, satu akun operasional, order/draft/revisi, katalog harga, pembayaran, produksi/pengiriman, tracking chat, pengaturan, dokumen privat, dan konektor integrasi. Aktivasi versi operasional memerlukan migrasi005–006; pairing WhatsApp dan Google Sheets memerlukan konfigurasi layanan yang sesuai.
 
+- **Upgrade dan cara operasional:** [panduan operasional](docs/PANDUAN_OPERASIONAL.md).
 - **Mulai menjalankan:** [panduan komputer sendiri, Codespaces, dan deployment](docs/MENJALANKAN_APLIKASI.md).
 - **Auth dan konfigurasi:** [setup Supabase Auth](docs/AUTH_SETUP.md).
 - **Status setup hosted:** [status integrasi](docs/STATUS_INTEGRASI.md).

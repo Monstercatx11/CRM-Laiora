@@ -1,0 +1,6 @@
+import { requireAccount } from '@/lib/auth';
+import { getSettings,getSequence } from '@/lib/data';
+import { businessDate } from '@/lib/format';
+import { BusinessForm,SequenceForm } from '@/components/settings-forms';
+import { LogoUpload } from '@/components/logo-upload';
+export default async function SettingsPage(){await requireAccount('/pengaturan');const [settings,sequence]=await Promise.all([getSettings(),getSequence()]);return <main className="page-content"><div className="page-head"><div><span className="eyebrow">Laiora / Pengaturan</span><h1>Pengaturan bisnis</h1><p>Identitas, penomoran PO, rekening, dan logo dokumen.</p></div></div>{settings.error?<p className="message error" role="alert">{settings.error}</p>:<section className="panel"><h2>Profil dan pembayaran</h2><BusinessForm settings={settings.data}/></section>}<div className="grid-two"><section className="panel"><h2>Nomor order</h2>{sequence.error?<p className="message error">{sequence.error}</p>:<SequenceForm year={Number(businessDate(settings.data.timezone).slice(0,4))} sequences={sequence.data}/>}</section><section className="panel"><h2>Logo Delivery Order</h2><p>Unggah logo resmi asli dari SOP. Dokumen memakai desain hitam-putih dan ukuran 100 × 150 mm.</p><LogoUpload currentPath={settings.data.logo_path}/></section></div></main>;}

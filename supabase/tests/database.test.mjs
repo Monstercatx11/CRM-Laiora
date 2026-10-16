@@ -70,7 +70,7 @@ await check('cancellation returns opportunity to Belum PO without deleting histo
 await db.exec("insert into public.messages(conversation_id,external_message_id,direction,body,sent_at) values('cccccccc-cccc-cccc-cccc-cccccccccccc','m1','inbound','test',now())");
 await check('duplicate event rejected by database',async()=>reject("insert into public.messages(conversation_id,external_message_id,direction,sent_at) values('cccccccc-cccc-cccc-cccc-cccccccccccc','m1','inbound',now())",/unique constraint/));
 await check('unverified payment cannot be marked confirmed',async()=>reject(`insert into public.payments(order_id,amount,verification_status) values(${id},1000,'confirmed')`,/check constraint/));
-await check('document buckets are private with file restrictions',async()=>{const r=await db.query('select public,allowed_mime_types from storage.buckets');assert.equal(r.rows.length,2);assert(r.rows.every(b=>b.public===false && b.allowed_mime_types.length>0))});
+await check('document buckets are private with file restrictions',async()=>{const r=await db.query('select public,allowed_mime_types from storage.buckets');assert.equal(r.rows.length,3);assert(r.rows.every(b=>b.public===false && b.allowed_mime_types.length>0))});
 await db.exec("insert into storage.objects(bucket_id,name) values('delivery-orders','synthetic.pdf'); set role authenticated; set request.jwt.claim.sub='22222222-2222-2222-2222-222222222222'");
 await check('other account cannot read documents',async()=>assert.equal(await scalar('select count(*)::integer from storage.objects'),0));
 await db.exec("set request.jwt.claim.sub='11111111-1111-1111-1111-111111111111'");

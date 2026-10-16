@@ -2,6 +2,10 @@
   "name": "laiora-database-checks",
   "private": true,
   "type": "module",
-  "scripts": {"test": "node database.test.mjs"},
-  "devDependencies": {"@electric-sql/pglite": "0.5.10"}
+  "scripts": {
+    "test": "node database.test.mjs && node operations.test.mjs && node upgrade.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.10"
+  }
 }

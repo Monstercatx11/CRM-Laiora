@@ -8,21 +8,38 @@
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "next typegen && tsc --noEmit",
     "test:auth": "node tests/auth-configuration.mjs && node tests/auth.e2e.mjs",
-    "test:db": "npm test --prefix supabase/tests"
+    "test:db": "npm test --prefix supabase/tests",
+    "test:orders": "node tests/order-domain.test.mjs",
+    "test:documents": "node --import tsx tests/documents.test.mjs",
+    "test:uploads": "node --import tsx tests/uploads.test.mjs",
+    "test:operations": "node tests/operations.e2e.mjs",
+    "test:whatsapp": "npm test --prefix services/whatsapp-bridge",
+    "test:sheets": "npm test --prefix services/sheets-worker",
+    "test:syncdb": "node services/sheets-worker/test/database.mjs",
+    "postinstall": "node scripts/copy-pdf-worker.mjs",
+    "prebuild": "node scripts/copy-pdf-worker.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",
     "next": "16.4.2",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "6.4.299",
+    "pngjs": "7.0.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "server-only": "0.0.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "@types/pngjs": "6.0.5",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "playwright": "1.61.1",
+    "tsx": "4.20.6",
     "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

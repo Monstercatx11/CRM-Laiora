@@ -36,5 +36,5 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 export const config = {
-  matcher: ['/login', '/dashboard/:path*', '/pesanan/:path*', '/tracking-chat/:path*', '/produksi/:path*', '/pengiriman/:path*', '/pembayaran/:path*', '/integrasi/:path*', '/api/:path*'],
+  matcher: ['/login', '/dashboard/:path*', '/pesanan/:path*', '/tracking-chat/:path*', '/produksi/:path*', '/pengiriman/:path*', '/pembayaran/:path*', '/integrasi/:path*', '/katalog/:path*', '/pengaturan/:path*', '/api/:path*'],
 };
