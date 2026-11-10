@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node src/index.mjs",
+    "start:local": "node --env-file=.env src/index.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {

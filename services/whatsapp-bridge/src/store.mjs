@@ -55,8 +55,12 @@ export class EncryptedStore {
       const handle = await open(temporary, 'wx', 0o600);
       try { await handle.writeFile(envelope); await handle.sync(); } finally { await handle.close(); }
       await rename(temporary, file);
-      const directory = await open(this.directory, 'r');
-      try { await directory.sync(); } finally { await directory.close(); }
+      // Windows cannot open/flush directory handles through Node's fs API.
+      // The encrypted file was flushed above; retain directory fsync on POSIX.
+      if (process.platform !== 'win32') {
+        const directory = await open(this.directory, 'r');
+        try { await directory.sync(); } finally { await directory.close(); }
+      }
     });
     this.writes = write.catch(() => {});
     return write;

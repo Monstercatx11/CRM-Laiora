@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
+    "dev:local": "next dev --hostname 127.0.0.1",
+    "setup:whatsapp": "node scripts/setup-local-whatsapp.mjs",
+    "test:local-setup": "node --test tests/setup-local-whatsapp.test.mjs",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "next typegen && tsc --noEmit",

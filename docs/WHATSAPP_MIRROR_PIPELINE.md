@@ -1,5 +1,7 @@
 # Mirror WhatsApp dan pipeline Laiora
 
+Untuk mencoba tanpa server online terlebih dahulu, gunakan [panduan localhost Windows](LOCALHOST_WINDOWS.md).
+
 ## Alur penggunaan
 
 Dashboard tetap berjalan di Vercel. Satu konektor Node.js di server online menjadi perangkat tertaut WhatsApp, lalu menyimpan pesan ke Supabase. Tracking Chat membaca pesan tersebut; tombol pembaruan atau polling 15 detik memperbarui tampilannya. Tidak ada WhatsApp Business API resmi dan tidak ada pengiriman pesan otomatis.

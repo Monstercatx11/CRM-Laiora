@@ -1,5 +1,7 @@
 # Laiora WhatsApp Linked Devices bridge
 
+Untuk testing pada komputer Windows, ikuti [panduan localhost](../../docs/LOCALHOST_WINDOWS.md). Perintah setup menyiapkan token dan sesi lokal, sedangkan `npm run start:local` memuat `.env` konektor. Bagian server persisten di bawah digunakan setelah pengujian lokal selesai.
+
 Proses Node.js terpisah yang menjaga satu koneksi WhatsApp Business lewat QR,
 menulis pesan ke Supabase, dan menyediakan status/QR kepada dashboard yang sudah
 login. Tidak ada endpoint pengiriman pesan, CORS publik, akses ke grup/status,
