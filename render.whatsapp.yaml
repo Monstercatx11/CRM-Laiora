@@ -1,0 +1,32 @@
+# Optional blueprint for the WhatsApp connector ONLY. Review Render pricing
+# before applying: Starter + persistent disk can incur recurring charges.
+services:
+  - type: web
+    name: laiora-whatsapp
+    runtime: node
+    plan: starter
+    rootDir: services/whatsapp-bridge
+    buildCommand: npm ci
+    startCommand: npm start
+    numInstances: 1
+    disk:
+      name: whatsapp-session
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATA_DIR
+        value: /var/data/laiora-whatsapp
+      - key: WHATSAPP_ACCOUNT_REF
+        value: laiora-main
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: WHATSAPP_BRIDGE_TOKEN
+        sync: false
+      - key: WHATSAPP_SESSION_KEY
+        sync: false

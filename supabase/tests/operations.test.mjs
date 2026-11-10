@@ -259,6 +259,35 @@ await check('chat labels and linking are explicit and preserve independent oppor
   await reject('select public.laiora_manage_opportunity($1,$2,null,$3,$4::uuid[])', [cid, 'Bad label', 'new', [randomUUID()]], /Label produk/);
   assert.equal(await scalar('select count(*)::int from public.chat_opportunities'), 2);
 });
+await check('pipeline stage RPC preserves title, labels and order links', async () => {
+  const before = await rows('select * from public.chat_opportunities where id=$1', [opportunity]);
+  const labels = await rows('select * from public.opportunity_product_labels where opportunity_id=$1', [opportunity]);
+  const links = await rows('select * from public.opportunity_order_links where opportunity_id=$1', [opportunity]);
+  await scalar('select public.laiora_set_opportunity_stage($1,$2)', [opportunity,'waiting_for_data']);
+  assert.equal(await scalar('select follow_up from public.chat_opportunities where id=$1',[opportunity]),'waiting_for_data');
+  assert.equal(await scalar('select title from public.chat_opportunities where id=$1',[opportunity]), before[0].title);
+  assert.deepEqual(await rows('select * from public.opportunity_product_labels where opportunity_id=$1',[opportunity]),labels);
+  assert.deepEqual(await rows('select * from public.opportunity_order_links where opportunity_id=$1',[opportunity]),links);
+  assert.equal(await scalar('select po_status from public.chat_tracking where opportunity_id=$1',[opportunity]),'Sudah PO');
+  assert.equal(await scalar("select count(*)::int from public.app_audit_log where entity_id=$1 and action='opportunity.stage_changed'",[opportunity]),1);
+});
+await check('pipeline rejects invalid stages and missing opportunities', async () => {
+  await reject('select public.laiora_set_opportunity_stage($1,$2)',[opportunity,'confirmed'],/Tahap pipeline/);
+  await reject('select public.laiora_set_opportunity_stage($1,$2)',[randomUUID(),'new'],/Peluang tidak ditemukan/);
+});
+await check('pipeline denies anonymous and unbound accounts', async () => {
+  await login(stranger);
+  await reject('select public.laiora_set_opportunity_stage($1,$2)',[opportunity,'new'],/tidak memiliki akses/);
+  await owner();await db.exec('set role anon');
+  await reject('select public.laiora_set_opportunity_stage($1,$2)',[opportunity,'new'],/permission denied/);
+  await login();
+});
+await check('pipeline migration can be replayed without resetting customer data', async () => {
+  await owner();
+  await db.exec(await readFile(new URL('202611100007_chat_pipeline.sql',migrations),'utf8'));
+  await login();
+  assert.equal(await scalar('select follow_up from public.chat_opportunities where id=$1',[opportunity]),'waiting_for_data');
+});
 await check('cancellation preserves number/history and changes derived PO label', async () => {
   const previous = await readOrder(oid);
   await scalar('select public.laiora_set_status($1,$2,null,null,true)', [oid, previous.revision_no]);

@@ -129,6 +129,10 @@ function mockRpc(name, body) {
     product.product_prices.push({ id: randomUUID(), product_id: product.id, unit_price: body.p_price, effective_from: body.p_effective_from });
     if (!products.includes(product)) products.push(product); return product.id;
   }
+  if (name === 'laiora_set_opportunity_stage') {
+    const opportunity = opportunities.find(item => item.id === body.p_opportunity_id);
+    assert(opportunity); opportunity.follow_up = body.p_follow_up; return null;
+  }
   if (name === 'laiora_manage_opportunity') {
     const opportunity = opportunities.find(item => item.id === body.p_opportunity_id) ?? { id: randomUUID(), conversation_id: body.p_conversation_id, created_at: now() };
     Object.assign(opportunity, { title: body.p_title, follow_up: body.p_follow_up, opportunity_product_labels: body.p_product_ids.map(product_id => ({ product_id, source: 'manual' })), opportunity_order_links: body.p_order_id ? [{ order_id: body.p_order_id, orders: orders.get(body.p_order_id) }] : [] });
@@ -267,6 +271,35 @@ try {
     await page.getByRole('link', { name: 'Buat draft PO untuk peluang ini', exact: true }).click(); await waitForPath(page, '/pesanan/baru'); assert.equal(await page.getByLabel('Nama pemesan', { exact: true }).inputValue(), 'Pelanggan Uji'); assert.match(await page.locator('textarea[name=raw_form]').inputValue(), /Mau pesan Brownies Original/); assert(!new URL(page.url()).searchParams.has('sender_phone'));
     await page.goto(`/tracking-chat?po=yes&product=${productId}`); await see(page, 'Brownies untuk pelanggan uji');
   });
+  await check('pipeline derives confirmed PO and moves only the follow-up stage', async () => {
+    await page.goto('/tracking-chat?view=pipeline');
+    const confirmed = page.getByRole('region', { name: 'Sudah PO', exact: true });
+    await confirmed.getByText('Brownies untuk pelanggan uji', { exact: true }).waitFor();
+    assert.equal(await confirmed.getByRole('button', { name: 'Pindahkan tahap' }).count(), 0);
+    await page.goto('/tracking-chat');
+    await page.locator('summary').filter({ hasText: '＋ Tambah peluang baru' }).click();
+    const newOpportunity = page.locator('details').filter({ has: page.locator('summary').filter({ hasText: '＋ Tambah peluang baru' }) });
+    await newOpportunity.getByLabel('Nama peluang / keterangan', { exact: true }).fill('Peluang follow-up uji');
+    await newOpportunity.getByLabel('Brownies Original (Regular)', { exact: true }).check();
+    await page.getByRole('button', { name: 'Buat peluang order', exact: true }).click();
+    await see(page, 'Peluang dan label diperbarui.');
+    await page.goto('/tracking-chat?view=pipeline');
+    const card = page.locator('.pipeline-card').filter({ hasText: 'Peluang follow-up uji' });
+    await card.locator('summary').click();
+    await card.getByLabel('Tahap tindak lanjut', { exact: true }).selectOption('waiting_for_data');
+    await card.getByRole('button', { name: 'Pindahkan tahap', exact: true }).click();
+    await page.getByRole('region', { name: 'Menunggu data', exact: true }).getByText('Peluang follow-up uji', { exact: true }).waitFor();
+    const updated = opportunities.find(item => item.title === 'Peluang follow-up uji');
+    assert.equal(updated.follow_up, 'waiting_for_data');
+    assert.equal(updated.opportunity_product_labels[0].product_id, productId);
+    assert.deepEqual(updated.opportunity_order_links, []);
+    await page.goto('/tracking-chat?view=pipeline&po=yes');
+    assert.equal(await page.getByText('Peluang follow-up uji', { exact: true }).count(), 0);
+    await see(page, 'Brownies untuk pelanggan uji');
+    await page.goto('/tracking-chat?view=pipeline&po=no');
+    await see(page, 'Peluang follow-up uji');
+    assert.equal(await page.getByText('Brownies untuk pelanggan uji', { exact: true }).count(), 0);
+  });
   await check('desktop and mobile operational pages remain usable without document overflow', async () => {
     await page.goto('/dashboard'); await page.screenshot({ path: `${qaDirectory}/dashboard-desktop.png`, fullPage: true });
     await page.goto('/pengaturan'); await page.screenshot({ path: `${qaDirectory}/settings-desktop.png`, fullPage: true });
@@ -278,7 +311,7 @@ try {
       await navigation.getByRole('link', { name: 'Pesanan', exact: true }).click();
       await waitForPath(page, '/pesanan');
       assert.equal(await navigation.isVisible(), false, 'Mobile menu closes after navigation');
-      for (const [route, name] of [['/pesanan/baru', 'new-order-mobile'], ['/tracking-chat', 'tracking-chat-mobile'], ['/produksi?status=all', 'production-mobile'], ['/pengaturan', 'settings-mobile'], ['/pembayaran', 'payments-mobile']]) {
+      for (const [route, name] of [['/pesanan/baru', 'new-order-mobile'], ['/tracking-chat', 'tracking-chat-mobile'], ['/tracking-chat?view=pipeline', 'pipeline-mobile'], ['/produksi?status=all', 'production-mobile'], ['/pengaturan', 'settings-mobile'], ['/pembayaran', 'payments-mobile']]) {
         await page.goto(route); await page.screenshot({ path: `${qaDirectory}/${name}-${width}.png`, fullPage: true });
         const dimensions = await page.evaluate(() => ({ viewport: window.innerWidth, width: document.documentElement.scrollWidth }));
         assert(dimensions.width <= dimensions.viewport + 1, `${route} overflows ${width}px viewport: ${JSON.stringify(dimensions)}`);
