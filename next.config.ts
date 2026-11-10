@@ -1,11 +1,6 @@
 import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  async rewrites() {
-    return {
-      beforeFiles: [{ source: '/', destination: '/index.html' }],
-    };
-  },
   async headers() {
     return [{ source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }, { key: 'Service-Worker-Allowed', value: '/' }] }, {
       source: '/:path*',

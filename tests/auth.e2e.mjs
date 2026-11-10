@@ -248,6 +248,19 @@ try {
   browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium',
     headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
 
+  await check('CRM root redirects to dashboard and anonymous visitors reach login', async () => {
+    const root = await fetch(`${appOrigin}/`, { redirect: 'manual' });
+    assert.equal(root.status, 307);
+    assert.equal(root.headers.get('location'), '/dashboard');
+    await withPage(appOrigin, async page => {
+      await page.goto('/');
+      await waitForPath(page, '/login');
+      assert.equal(new URL(page.url()).searchParams.get('next'), '/dashboard');
+      await page.getByLabel('Email', { exact: true }).waitFor();
+    });
+    assert.equal((await fetch(`${appOrigin}/index.html`)).status, 404);
+  });
+
   await check('every division rejects unauthenticated direct navigation and preserves its destination', async () => {
     await withPage(appOrigin, async (page) => {
       for (const path of protectedPaths) {
@@ -309,6 +322,9 @@ try {
         await page.getByRole('button', { name: 'Keluar', exact: true }).waitFor();
         assert.equal(await page.getByLabel('Password', { exact: true }).count(), 0);
       }
+      await page.goto('/');
+      await waitForPath(page, '/dashboard');
+      await page.getByRole('button', { name: 'Keluar', exact: true }).waitFor();
       const response = await sessionResponse(page);
       assert.equal(response.status, 200);
       assert.match(response.cacheControl || '', /no-store/i);

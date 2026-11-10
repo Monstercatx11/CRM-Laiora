@@ -1,31 +1,26 @@
-# Publikasi website Laiora Boulangerie
+# Publikasi CRM dan landing page Laiora
 
-## Halaman publik dan CRM
+## CRM operasional
 
-- `/` menampilkan `public/index.html`, salinan persis HTML yang diunggah pemilik pada 17 Oktober 2026. Gambar tertanam, tautan WhatsApp/marketplace/media sosial, font, dan Meta Pixel dari file asli dipertahankan.
-- `/index.html` juga tersedia sebagai alamat langsung file tersebut.
-- `/dashboard` tetap menjadi pintu masuk CRM yang memerlukan login.
-- Rewrite di `next.config.ts` menyajikan HTML pada `/` tanpa mengubah alamat pengunjung. Halaman pengalihan Next.js lama hanya menjadi fallback jika rewrite dihapus.
+Repositori `Monstercatx11/CRM-Laiora`, branch `main`, diterbitkan melalui proyek Vercel `crm-laiora`.
 
-Repositori: https://github.com/Monstercatx11/CRM-Laiora, branch `main`.
-Proyek Vercel yang sebelumnya dipasang: `crm-laiora`.
-Alamat Vercel: https://crm-laiora.vercel.app/.
+- Alamat utama: https://crm-laiora.vercel.app/.
+- `/` mengarahkan ke `/dashboard`; pengunjung tanpa sesi diarahkan ke login.
+- `/dashboard` dan seluruh halaman operasional tetap memerlukan akun yang diizinkan.
+- `/integrasi` adalah halaman pengaturan koneksi WhatsApp dan Google Sheets.
+- Tidak ada rewrite halaman utama CRM menuju landing page.
 
-Push ke `main` memicu deployment otomatis jika integrasi Git Vercel tersebut masih aktif. Periksa **Vercel → crm-laiora → Deployments** dan tunggu status **Ready** untuk commit terbaru. Push Git yang berhasil tidak dengan sendirinya membuktikan deployment berhasil.
+Push ke `main` memicu deployment jika integrasi Git Vercel aktif. Periksa **Deployments → Production** dan pastikan commit terbaru berstatus **Ready/Current**. Push Git tidak membuktikan deployment sudah berhasil atau environment variable sudah benar. Environment Variables yang diubah memerlukan deployment baru.
 
-## Domain `laioraboulangerie.com`
+## Landing page promosi
 
-Domain khusus perlu didaftarkan dan dikelola oleh pemilik. Mengubah file HTML atau nama repositori tidak mengaktifkan domain.
+Landing page dipublikasikan dari repositori **Monstercatx11/LP-LAIORA**, melalui GitHub Pages:
+https://monstercatx11.github.io/LP-LAIORA/.
 
-1. Jika belum memiliki domain, daftarkan `laioraboulangerie.com` melalui penyedia domain pilihan setelah memastikan ketersediaan dan biaya.
-2. Buka **Vercel → crm-laiora → Settings → Domains → Add Domain**.
-3. Masukkan `laioraboulangerie.com` dan hubungkan ke lingkungan **Production**. Tambahkan `www.laioraboulangerie.com` jika ingin menyediakan alamat `www`; pilih pengalihan menuju domain utama.
-4. Di pengaturan DNS penyedia domain, buat/perbarui record yang **ditampilkan Vercel untuk proyek ini**. Salin tipe, nama, dan nilainya persis; jangan menebak alamat IP/CNAME. Jika diminta verifikasi kepemilikan, tambahkan TXT yang diberikan Vercel.
-5. Pertahankan record email (MX dan TXT email) yang sudah ada. Selesaikan konflik record website hanya untuk hostname yang dihubungkan.
-6. Tunggu Vercel menunjukkan **Valid Configuration** dan sertifikat HTTPS aktif. Uji halaman utama serta `/dashboard` pada domain baru.
+Salinan HTML yang dahulu diunggah disimpan di `design/landing/index.html` sebagai arsip desain, di luar direktori `public` aplikasi CRM. Perubahan file arsip ini tidak menerbitkan ulang situs GitHub Pages. Lakukan perubahan landing page melalui repositori LP-LAIORA.
 
-Sampai domain ditambahkan, DNS diverifikasi, dan HTTPS aktif, gunakan alamat Vercel. Tidak ada domain yang dibeli atau konfigurasi DNS yang diubah oleh penambahan file di repositori ini.
+Jika menggunakan domain pemasaran `laioraboulangerie.com`, daftarkan dan atur domain tersebut pada hosting landing page yang dipilih. Domain harus dimiliki dan DNS-nya dikonfigurasi. Perubahan root CRM ini tidak mengubah domain atau DNS.
 
-## Verifikasi lokal
+## Pemeriksaan
 
-Gunakan Node.js 24, jalankan `npm ci`, `npm run build`, lalu `npm start`. Pastikan `/` memberikan HTTP 200 dengan judul `Laiora Boulangerie`, keempat tautan tampil, dan `/dashboard` tetap mengarahkan pengunjung tanpa sesi ke halaman login.
+Dengan Node.js 24, jalankan `npm ci`, `npm run build`, dan `npm run test:auth`. Pengujian memastikan root mengarah ke dashboard, pengunjung tanpa sesi masuk melalui login, akun operasional dapat membuka dashboard dari root, dan landing page tidak disajikan dari `/index.html` pada deployment CRM.
