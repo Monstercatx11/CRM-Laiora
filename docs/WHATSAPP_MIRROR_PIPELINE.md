@@ -20,7 +20,13 @@ Jika migrasi 001–006 sudah terpasang, jalankan isi **`supabase/migrations/2026
 
 ## Server online: contoh Render
 
-Server harus terus berjalan dan mempunyai disk permanen. Paket yang tidur atau memakai disk sementara tidak cocok untuk sesi WhatsApp. File **`render.whatsapp.yaml`** adalah blueprint opsional untuk satu web service Node dan disk 1 GB. Ini dapat menimbulkan biaya paket Starter dan disk; periksa harga di Render sebelum membuat resource. Menambahkan file ini ke GitHub tidak membuat atau membeli server.
+[Deploy konektor ke Render](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2FMonstercatx11%2FCRM-Laiora)
+
+Tautan membuka konfigurasi Blueprint dari `render.yaml` pada root repositori. Login Render dan izinkan akses repositori GitHub jika diminta. Tinjau paket dan disk yang ditampilkan sebelum menerapkan. Untuk repositori privat, jika import lewat tautan tidak tersedia, gunakan **New → Blueprint**, hubungkan repositori dan gunakan path `render.yaml`.
+
+Render akan meminta nilai environment yang bertanda `sync: false`. Isi hanya di pengaturan Render, bukan di GitHub/chat. Setelah deployment Ready, lanjutkan pengaturan dua variabel Vercel dan scan QR pada langkah di bawah. Tombol deploy tidak memasang secret di Vercel atau menjalankan migrasi Supabase secara otomatis.
+
+Server harus terus berjalan dan mempunyai disk permanen. Paket yang tidur atau memakai disk sementara tidak cocok untuk sesi WhatsApp. File **`render.yaml`** adalah blueprint opsional untuk satu web service Node dan disk 1 GB. Ini dapat menimbulkan biaya paket Starter dan disk; periksa harga di Render sebelum membuat resource. Menambahkan file ini ke GitHub tidak membuat atau membeli server.
 
 Jika membuat service secara manual:
 
