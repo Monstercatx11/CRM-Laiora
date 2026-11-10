@@ -270,11 +270,19 @@ try {
   await check('desktop and mobile operational pages remain usable without document overflow', async () => {
     await page.goto('/dashboard'); await page.screenshot({ path: `${qaDirectory}/dashboard-desktop.png`, fullPage: true });
     await page.goto('/pengaturan'); await page.screenshot({ path: `${qaDirectory}/settings-desktop.png`, fullPage: true });
-    await page.setViewportSize({ width: 390, height: 844 });
-    for (const [route, name] of [['/pesanan/baru', 'new-order-mobile'], ['/tracking-chat', 'tracking-chat-mobile'], ['/produksi?status=all', 'production-mobile']]) {
-      await page.goto(route); await page.screenshot({ path: `${qaDirectory}/${name}.png`, fullPage: true });
-      const dimensions = await page.evaluate(() => ({ viewport: window.innerWidth, width: document.documentElement.scrollWidth }));
-      assert(dimensions.width <= dimensions.viewport + 1, `${route} overflows mobile viewport: ${JSON.stringify(dimensions)}`);
+    for (const width of [360, 390, 768]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/dashboard');
+      await page.getByRole('button', { name: 'Menu', exact: true }).click();
+      const navigation = page.getByRole('navigation', { name: 'Navigasi divisi' });
+      await navigation.getByRole('link', { name: 'Pesanan', exact: true }).click();
+      await waitForPath(page, '/pesanan');
+      assert.equal(await navigation.isVisible(), false, 'Mobile menu closes after navigation');
+      for (const [route, name] of [['/pesanan/baru', 'new-order-mobile'], ['/tracking-chat', 'tracking-chat-mobile'], ['/produksi?status=all', 'production-mobile'], ['/pengaturan', 'settings-mobile'], ['/pembayaran', 'payments-mobile']]) {
+        await page.goto(route); await page.screenshot({ path: `${qaDirectory}/${name}-${width}.png`, fullPage: true });
+        const dimensions = await page.evaluate(() => ({ viewport: window.innerWidth, width: document.documentElement.scrollWidth }));
+        assert(dimensions.width <= dimensions.viewport + 1, `${route} overflows ${width}px viewport: ${JSON.stringify(dimensions)}`);
+      }
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
   });

@@ -13,6 +13,7 @@
     "test:documents": "node --import tsx tests/documents.test.mjs",
     "test:uploads": "node --import tsx tests/uploads.test.mjs",
     "test:operations": "node tests/operations.e2e.mjs",
+    "test:pwa": "node tests/pwa.e2e.mjs",
     "test:whatsapp": "npm test --prefix services/whatsapp-bridge",
     "test:sheets": "npm test --prefix services/sheets-worker",
     "test:syncdb": "node services/sheets-worker/test/database.mjs",
