@@ -1,3 +1,4 @@
+import { BridgeStartupError } from './startup-diagnostics.mjs';
 /** Durable, encrypted outbox: acknowledge only after the idempotent RPC succeeds. */
 export class MessageQueue {
   constructor(store, ingest, onChange = () => {}) {
@@ -12,7 +13,7 @@ export class MessageQueue {
   }
   async initialize() {
     this.items = await this.store.read('messages', []);
-    if (!Array.isArray(this.items) || this.items.some(item => !item?.p_message_id || !item?.p_chat_id)) throw new Error('Invalid encrypted message queue');
+    if (!Array.isArray(this.items) || this.items.some(item => !item?.p_message_id || !item?.p_chat_id)) throw new BridgeStartupError('QUEUE_INVALID');
     this.timer = setInterval(() => void this.flush(), 5000);
     this.timer.unref();
   }

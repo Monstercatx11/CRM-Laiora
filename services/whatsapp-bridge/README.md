@@ -1,5 +1,19 @@
 # Laiora WhatsApp Linked Devices bridge
 
+## Jika startup Render gagal
+
+Deployment terbaru menampilkan kode tetap tanpa nilai secret:
+
+- `SESSION_KEY_INVALID`: format `WHATSAPP_SESSION_KEY` bukan base64 dari 32 byte. Tempel **nilai saja**, bukan `WHATSAPP_SESSION_KEY=...`, tanda kutip, atau baris tambahan. Jika sudah ada sesi terenkripsi, pertahankan/pulihkan kunci aslinya.
+- `BRIDGE_TOKEN_INVALID`: token kurang dari 32 karakter, berisi whitespace/kutip, atau masih menyertakan nama variabel. Gunakan nilai yang sama di Render dan Vercel.
+- `SUPABASE_URL_INVALID` / `SUPABASE_KEY_INVALID`: periksa URL proyek HTTPS dan backend secret/service-role key. Publishable/anon key tidak dapat digunakan untuk konektor.
+- `STORAGE_PERMISSION_DENIED` / `STORAGE_PATH_INVALID`: periksa disk permanen `/var/data`, direktori `/var/data/laiora-whatsapp`, dan izin tulis service.
+- `SESSION_LOCKED`: pastikan hanya satu instance dan proses lama sudah berhenti. Baru setelah dipastikan tidak ada writer aktif, hapus **hanya** `.writer-lock`; jangan hapus sesi/antrean atau mengganti kuncinya.
+- `SESSION_DECRYPTION_FAILED` / `STORE_UNREADABLE`: data lama tidak di-reset. Periksa volume dan kunci asli sebelum mencoba pemulihan.
+- `MISSING_...`: tambahkan variabel yang disebut pada Render Environment.
+
+Untuk deployment lama yang hanya menampilkan pesan umum, buka service **laiora-whatsapp → Manual Deploy → Deploy latest commit**. Gunakan log dari commit terbaru. Jangan menyertakan secret saat membagikan screenshot/log.
+
 Untuk testing pada komputer Windows, ikuti [panduan localhost](../../docs/LOCALHOST_WINDOWS.md). Perintah setup menyiapkan token dan sesi lokal, sedangkan `npm run start:local` memuat `.env` konektor. Bagian server persisten di bawah digunakan setelah pengujian lokal selesai.
 
 Proses Node.js terpisah yang menjaga satu koneksi WhatsApp Business lewat QR,

@@ -5,25 +5,19 @@ import { EncryptedStore } from './store.mjs';
 import { BridgeController } from './controller.mjs';
 import { createBaileysAdapter } from './baileys-adapter.mjs';
 import { createBridgeServer } from './server.mjs';
-
-function required(name) {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing required setting: ${name}`);
-  return value;
-}
+import { readBridgeConfig, startupDiagnostic, BridgeStartupError } from './startup-diagnostics.mjs';
 // libsignal uses console directly for session objects. Suppress dependency output
 // in this dedicated process; only the sanitized operational lines below are emitted.
 for (const method of ['log', 'info', 'warn', 'error', 'debug', 'dir']) console[method] = () => {};
 
+let startupPhase = 'config';
 async function main() {
-  const supabaseUrl = new URL(required('SUPABASE_URL'));
-  if (supabaseUrl.protocol !== 'https:' || supabaseUrl.username || supabaseUrl.password) throw new Error('SUPABASE_URL must be an HTTPS project URL');
-  const secret = required('SUPABASE_SECRET_KEY');
-  if (secret.startsWith('sb_publishable_')) throw new Error('SUPABASE_SECRET_KEY requires a backend secret, not a publishable key');
-  const token = required('WHATSAPP_BRIDGE_TOKEN');
+  const { supabaseUrl, secret, token, sessionKey, dataDirectory, port } = readBridgeConfig(process.env);
   const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY;
-  const dispatcher = proxyUrl ? new ProxyAgent(proxyUrl) : undefined;
-  const store = new EncryptedStore(resolve(required('DATA_DIR')), required('WHATSAPP_SESSION_KEY'));
+  let dispatcher;
+  try { dispatcher = proxyUrl ? new ProxyAgent(proxyUrl) : undefined; }
+  catch { throw new BridgeStartupError('PROXY_INVALID'); }
+  const store = new EncryptedStore(resolve(dataDirectory), sessionKey);
   const controller = new BridgeController({
     store,
     adapter: createBaileysAdapter(),
@@ -44,9 +38,9 @@ async function main() {
   });
   // Construct before acquiring the volume so invalid token configuration cannot leak a lock.
   const server = createBridgeServer(controller, token);
+  startupPhase = 'storage';
   await controller.initialize();
-  const port = Number(process.env.PORT || 3100);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) { await controller.stop(); throw new Error('Invalid PORT'); }
+  startupPhase = 'listen';
   server.requestTimeout = 20000;
   server.headersTimeout = 10000;
   await new Promise((resolveListen, reject) => {
@@ -64,4 +58,4 @@ async function main() {
   };
   for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => { void shutdown().catch(() => { process.exitCode = 1; }); });
 }
-main().catch(error => { process.stderr.write((error.message?.startsWith('Missing required setting:') ? error.message : 'WhatsApp bridge startup failed. Check environment settings, persistent volume lock and encryption key.') + '\n'); process.exitCode = 1; });
+main().catch(error => { process.stderr.write(startupDiagnostic(error, startupPhase) + '\n'); process.exitCode = 1; });

@@ -1,5 +1,6 @@
 import { MessageQueue } from './queue.mjs';
 import { normalizeMessage } from './messages.mjs';
+import { BridgeStartupError } from './startup-diagnostics.mjs';
 
 /** Socket adapter is injected, so lifecycle can be tested without a WhatsApp account. */
 export class BridgeController {
@@ -21,7 +22,7 @@ export class BridgeController {
     await this.store.acquire();
     try {
       this.auth = await this.store.read('auth', null);
-      if (this.auth !== null && (typeof this.auth !== 'object' || !this.auth.creds || typeof this.auth.creds !== 'object' || !this.auth.keys || typeof this.auth.keys !== 'object')) throw new Error('Invalid encrypted auth state');
+      if (this.auth !== null && (typeof this.auth !== 'object' || !this.auth.creds || typeof this.auth.creds !== 'object' || !this.auth.keys || typeof this.auth.keys !== 'object')) throw new BridgeStartupError('AUTH_STATE_INVALID');
       await this.queue.initialize();
       void this.queue.flush();
       if (this.auth?.creds?.registered) await this.connect();
